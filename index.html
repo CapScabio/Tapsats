@@ -1,304 +1,397 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ Lightning Starter Kit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Anillos NFC de Pago ⚡ La Crypta</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(180deg, #0a0f1a 0%, #1a1a2e 100%);
-      min-height: 100vh;
-      color: #fff;
-      padding: 40px 20px;
+    :root {
+      --primary: #00ff9d;
+      --primary-hover: #00cc7d;
+      --bg-dark: #0a0f1a;
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --bg-card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.6);
+      --error: #ff4d4d;
+      --success: #00ff9d;
     }
-    .container { max-width: 800px; margin: 0 auto; }
-    h1 { 
-      font-size: 2.5rem; 
-      margin-bottom: 10px;
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      /* Mobile first */
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--bg-card-border);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h1 span {
+      color: var(--primary);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 8px;
+      margin-bottom: 10px;
     }
-    h1 span { color: #ffc800; }
-    .subtitle { color: rgba(255,255,255,0.6); margin-bottom: 40px; }
-    
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 20px;
-    }
-    .card h2 {
-      font-size: 1.3rem;
-      margin-bottom: 15px;
+
+    /* Inputs & Forms */
+    .input-group {
       display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--bg-card-border);
+      color: white;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.2);
+    }
+
+    /* Big Amount Input specifically */
+    .amount-input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .amount-input-container input {
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: right;
+      padding-right: 60px;
+      height: 80px;
+    }
+
+    .amount-input-container .currency {
+      position: absolute;
+      right: 20px;
+      color: var(--text-muted);
+      font-weight: bold;
+    }
+
+    /* Buttons */
+    button {
+      background: var(--primary);
+      color: #000;
+      border: none;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
       align-items: center;
       gap: 10px;
-    }
-    .card p { color: rgba(255,255,255,0.7); margin-bottom: 20px; line-height: 1.6; }
-    
-    input, textarea {
+      transition: all 0.2s ease;
       width: 100%;
-      padding: 12px 16px;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      color: #fff;
-      font-size: 1rem;
-      margin-bottom: 15px;
     }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #00ff9d;
+
+    button:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
     }
-    input::placeholder { color: rgba(255,255,255,0.4); }
-    
-    button {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #00ff9d 0%, #00cc7d 100%);
-      color: #000;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: transform 0.2s;
+
+    button:active {
+      transform: translateY(0);
     }
-    button:hover { transform: scale(1.02); }
+
     button:disabled {
-      opacity: 0.5;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.3);
       cursor: not-allowed;
       transform: none;
     }
-    
-    .output {
-      background: rgba(0,0,0,0.3);
-      border-radius: 8px;
-      padding: 15px;
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Status Notifications */
+    #statusFeedback {
       margin-top: 15px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      word-break: break-all;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      display: none;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .status-error {
+      background: rgba(255, 77, 77, 0.1);
+      border: 1px solid rgba(255, 77, 77, 0.2);
+      color: var(--error);
+      display: block !important;
+    }
+
+    .status-success {
+      background: rgba(0, 255, 157, 0.1);
+      border: 1px solid rgba(0, 255, 157, 0.2);
+      color: var(--success);
+      display: block !important;
+    }
+
+    .status-scanning {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      display: block !important;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(0, 255, 157, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 157, 0);
+      }
+    }
+
+    /* Navigation tabs */
+    .tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 6px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      background: var(--bg-card);
+      color: var(--text-main);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Views */
+    .view {
       display: none;
     }
-    .output.show { display: block; }
-    .output.success { border-left: 3px solid #00ff9d; }
-    .output.error { border-left: 3px solid #ff6b6b; }
-    
-    .status {
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 15px;
+
+    .view.active {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.3s ease;
     }
-    .status.connected { background: rgba(0,255,157,0.15); color: #00ff9d; }
-    .status.disconnected { background: rgba(255,107,107,0.15); color: #ff6b6b; }
-    
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-    
-    .footer {
-      margin-top: 60px;
-      text-align: center;
-      color: rgba(255,255,255,0.4);
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* NFC Support Warning */
+    #nfcWarning {
+      display: none;
+      background: rgba(255, 200, 0, 0.1);
+      border: 1px solid rgba(255, 200, 0, 0.3);
+      color: #ffc800;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
       font-size: 0.9rem;
+      line-height: 1.5;
     }
-    .footer a { color: #ffc800; text-decoration: none; }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>⚡ <span>Lightning</span> Starter Kit</h1>
-    <p class="subtitle">Demo interactivo para Lightning Hackathons 2026</p>
+  <div class="app-container">
+    <header>
+      <h1>NFC <span>Ring</span> Pay</h1>
+      <p class="subtitle">Cobros rápidos usando anillos NFC y Lightning Network.</p>
+    </header>
 
-    <!-- WebLN Connection -->
-    <div class="card">
-      <h2>🔌 Conectar Wallet (WebLN)</h2>
-      <p>Conectá tu wallet del navegador (Alby, etc.) para interactuar con Lightning.</p>
-      
-      <div id="walletStatus" class="status disconnected">
-        ⚪ No conectado
-      </div>
-      
-      <button id="connectBtn" onclick="connectWallet()">Conectar Wallet</button>
-      <div id="walletOutput" class="output"></div>
+    <div id="nfcWarning">
+      ⚠️ Tu navegador no soporta Web NFC (Solo Chrome para Android). Vas a poder ver el UI, pero no interactuar con el
+      anillo.
     </div>
 
-    <div class="grid">
-      <!-- Lightning Address -->
+    <!-- Pestañas -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('charge')">Cobrar</div>
+      <div class="tab" onclick="switchTab('setup')">Configurar Anillo</div>
+    </div>
+
+    <!-- VISTA: COBRAR -->
+    <div id="chargeView" class="view active">
       <div class="card">
-        <h2>📬 Lightning Address</h2>
-        <p>Resolvé una Lightning Address y generá un invoice.</p>
-        
-        <input type="text" id="lnAddress" placeholder="usuario@dominio.com" value="hello@getalby.com">
-        <input type="number" id="lnAmount" placeholder="Cantidad en sats" value="21">
-        <button onclick="resolveLightningAddress()">Generar Invoice</button>
-        <div id="lnAddressOutput" class="output"></div>
-      </div>
+        <h2>💰 Terminal de Cobro</h2>
+        <p class="subtitle" style="margin-bottom: 0;">Ingresá el monto y escaneá el anillo del cliente para cobrarle.
+        </p>
 
-      <!-- Create Invoice -->
+        <div class="input-group">
+          <label for="amount">Monto a cobrar (Sats)</label>
+          <div class="amount-input-container">
+            <input type="number" id="amount" placeholder="0" min="1" step="1">
+            <span class="currency">sats</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="merchantAddress">Lightning Address del Local (Donde recibirás los fondos)</label>
+          <input type="text" id="merchantAddress" placeholder="tu-local@getalby.com" value="hello@getalby.com">
+        </div>
+
+        <button id="chargeBtn">
+          <span style="font-size: 1.5rem">📱</span>
+          Escanear anillo para Cobrar
+        </button>
+      </div>
+    </div>
+
+    <!-- VISTA: CONFIGURAR ANILLO -->
+    <div id="setupView" class="view">
       <div class="card">
-        <h2>📝 Crear Invoice</h2>
-        <p>Generá un invoice para recibir pagos.</p>
-        
-        <input type="number" id="invoiceAmount" placeholder="Cantidad en sats" value="100">
-        <input type="text" id="invoiceMemo" placeholder="Descripción" value="Test desde Lightning Starter">
-        <button id="createInvoiceBtn" onclick="createInvoice()" disabled>Crear Invoice</button>
-        <div id="invoiceOutput" class="output"></div>
+        <h2>⚙️ Configurar Anillo</h2>
+        <p class="subtitle" style="margin-bottom: 0;">Vinculá una wallet escribiendo su NWC en el anillo NFC.</p>
+
+        <div class="input-group">
+          <label for="nwcString">Nostr Wallet Connect URI</label>
+          <input type="password" id="nwcString" placeholder="nostr+walletconnect://...">
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top:-5px;">
+          Podés obtener un NWC desde <a href="https://nwc.getalby.com" target="_blank"
+            style="color:var(--primary)">Alby</a> u otra wallet compatible.
+        </p>
+
+        <button id="writeBtn" class="secondary">
+          <span style="font-size: 1.5rem">✍️</span>
+          Escribir en el Anillo
+        </button>
       </div>
     </div>
 
-    <!-- Pay Invoice -->
-    <div class="card">
-      <h2>💸 Pagar Invoice</h2>
-      <p>Pagá un invoice bolt11.</p>
-      
-      <textarea id="payInvoice" rows="3" placeholder="lnbc..."></textarea>
-      <button id="payBtn" onclick="payInvoice()" disabled>Pagar</button>
-      <div id="payOutput" class="output"></div>
-    </div>
+    <!-- Panel de Estado Compartido -->
+    <div id="statusFeedback"></div>
 
-    <div class="footer">
-      <p>
-        <a href="https://hackaton.lacrypta.ar" target="_blank">Lightning Hackathons 2026</a> · 
-        <a href="https://lacrypta.ar" target="_blank">La Crypta</a> · 
-        <a href="https://github.com/lacrypta/lightning-starter" target="_blank">GitHub</a>
-      </p>
-    </div>
   </div>
 
-  <script type="module">
-    import { LightningAddress } from "https://esm.sh/@getalby/lightning-tools@5";
-    
-    window.webln = null;
+  <script type="module" src="./src/main.js"></script>
+  <script>
+    // UX para cambiar pestañas
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
 
-    // Conectar wallet
-    window.connectWallet = async function() {
-      const status = document.getElementById("walletStatus");
-      const output = document.getElementById("walletOutput");
-      const btn = document.getElementById("connectBtn");
-      
-      try {
-        btn.disabled = true;
-        btn.textContent = "Conectando...";
-        
-        if (typeof window.webln === "undefined" || !window.webln) {
-          // Intentar detectar provider
-          if (window.nostr) {
-            output.textContent = "⚠️ Detecté Nostr pero no WebLN. Instalá Alby para pagos Lightning.";
-            output.className = "output show error";
-            return;
-          }
-          throw new Error("No se detectó wallet. Instalá Alby u otra extensión WebLN.");
-        }
-
-        await window.webln.enable();
-        const info = await window.webln.getInfo();
-        
-        status.className = "status connected";
-        status.innerHTML = `🟢 Conectado: ${info.node?.alias || "Wallet"}`;
-        
-        output.textContent = JSON.stringify(info, null, 2);
-        output.className = "output show success";
-        
-        // Habilitar botones
-        document.getElementById("createInvoiceBtn").disabled = false;
-        document.getElementById("payBtn").disabled = false;
-        
-        btn.textContent = "✓ Conectado";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-        btn.disabled = false;
-        btn.textContent = "Conectar Wallet";
+      if (tabId === 'charge') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('chargeView').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('setupView').classList.add('active');
       }
-    };
 
-    // Resolver Lightning Address
-    window.resolveLightningAddress = async function() {
-      const address = document.getElementById("lnAddress").value;
-      const amount = parseInt(document.getElementById("lnAmount").value) || 21;
-      const output = document.getElementById("lnAddressOutput");
-      
-      try {
-        output.textContent = "Resolviendo...";
-        output.className = "output show";
-        
-        const ln = new LightningAddress(address);
-        await ln.fetch();
-        
-        const invoice = await ln.requestInvoice({ satoshi: amount });
-        
-        output.textContent = `✅ Invoice de ${amount} sats:\n\n${invoice.paymentRequest}`;
-        output.className = "output show success";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-      }
-    };
-
-    // Crear invoice
-    window.createInvoice = async function() {
-      const amount = parseInt(document.getElementById("invoiceAmount").value);
-      const memo = document.getElementById("invoiceMemo").value;
-      const output = document.getElementById("invoiceOutput");
-      
-      try {
-        output.textContent = "Creando invoice...";
-        output.className = "output show";
-        
-        const invoice = await window.webln.makeInvoice({
-          amount: amount,
-          defaultMemo: memo
-        });
-        
-        output.textContent = `✅ Invoice creado:\n\n${invoice.paymentRequest}`;
-        output.className = "output show success";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-      }
-    };
-
-    // Pagar invoice
-    window.payInvoice = async function() {
-      const invoice = document.getElementById("payInvoice").value.trim();
-      const output = document.getElementById("payOutput");
-      
-      if (!invoice) {
-        output.textContent = "⚠️ Pegá un invoice bolt11";
-        output.className = "output show error";
-        return;
-      }
-      
-      try {
-        output.textContent = "Enviando pago...";
-        output.className = "output show";
-        
-        const result = await window.webln.sendPayment(invoice);
-        
-        output.textContent = `✅ Pago exitoso!\n\nPreimage: ${result.preimage}`;
-        output.className = "output show success";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-      }
-    };
-
-    // Auto-detect wallet on load
-    if (window.webln) {
-      document.getElementById("walletStatus").innerHTML = "🟡 Wallet detectada - Click para conectar";
+      // Limpiar estados al cambiar de pestaña
+      const statusDiv = document.getElementById('statusFeedback');
+      statusDiv.className = '';
+      statusDiv.innerHTML = '';
     }
   </script>
 </body>
+
 </html>
