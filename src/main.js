@@ -16,6 +16,17 @@ const elements = {
     statusFeedback: document.getElementById('statusFeedback')
 };
 
+// Utilidad para escapar HTML y prevenir XSS
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return String(unsafe);
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 // Utilidad para mostrar notificaciones de estado
 function showStatus(message, type = 'scanning') {
     elements.statusFeedback.className = `status-${type}`;
@@ -41,15 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // FLUJO: COBRAR (Leer Anillo y Pagar)
 // ==========================================
 elements.chargeBtn.addEventListener('click', async () => {
-    const amount = parseInt(elements.amountInput.value);
+    const amount = Number(elements.amountInput.value);
     const merchant = elements.merchantAddress.value.trim();
 
-    if (!amount || amount <= 0) {
+    if (!amount || amount <= 0 || !Number.isSafeInteger(amount)) {
         showStatus('⚠️ Ingresá un monto válido para cobrar.', 'error');
         return;
     }
 
-    if (!merchant || !merchant.includes('@')) {
+    const lnUrlRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!merchant || !lnUrlRegex.test(merchant)) {
         showStatus('⚠️ Ingresá una Lightning Address válida.', 'error');
         return;
     }
@@ -71,14 +83,14 @@ elements.chargeBtn.addEventListener('click', async () => {
         showStatus(`
       <strong>✅ ¡Pago Recibido con Éxito!</strong><br><br>
       <strong>Monto:</strong> ${amount} sats<br>
-      <strong>Recibo (Preimage):</strong><br><span style="font-size:0.75rem; word-break: break-all;">${result.preimage}</span>
+      <strong>Recibo (Preimage):</strong><br><span style="font-size:0.75rem; word-break: break-all;">${escapeHtml(result.preimage)}</span>
     `, 'success');
 
         // Reiniciar input
         elements.amountInput.value = '';
 
     } catch (error) {
-        showStatus(`❌ <strong>Error en el proceso:</strong><br>${error.message || error}`, 'error');
+        showStatus(`❌ <strong>Error en el proceso:</strong><br>${escapeHtml(error.message || String(error))}`, 'error');
     } finally {
         // Restaurar botón
         if (nfcService.isSupported()) {
@@ -111,7 +123,7 @@ elements.writeBtn.addEventListener('click', async () => {
         elements.nwcString.value = ''; // Limpiar input por seguridad
 
     } catch (error) {
-        showStatus(`❌ <strong>Error al vincular:</strong><br>${error.message || error}`, 'error');
+        showStatus(`❌ <strong>Error al vincular:</strong><br>${escapeHtml(error.message || String(error))}`, 'error');
     } finally {
         if (nfcService.isSupported()) {
             elements.writeBtn.disabled = false;
