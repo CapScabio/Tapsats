@@ -52,25 +52,7 @@ El proyecto es simple, liviano y poderoso. Está diseñado "Mobile First" y no r
 
 ---
 
-## 📱 Demostración en Vivo y Pruebas
-
-Debido a que este proyecto interactúa con hardware físico (el chip NFC), la prueba requiere dos cosas:
-1. Un dispositivo Android con soporte NFC.
-2. Un anillo NFC *(o cualquier etiqueta/tarjeta NFC compatible con memoria NDEF de texto/URI)*.
-
-### 🚀 Iniciar entorno local (HTTPS estricto)
-
-Para que el navegador permita acceder al chip NFC, la página debe cargarse por **HTTPS**.
-
-```bash
-# Instala las dependencias
-npm install 
-
-# Inicia Vite (creará un certificado HTTPS local falso con @vitejs/plugin-basic-ssl)
-npm run dev
-```
-
-🌐 Desde tu celular Android que esté en la misma red WiFi, abre la URL proporcionada por la terminal (ej: `https://192.168.0.10:5173`).
+## 📱 Configuración básica para uso
 
 ### 🛠️ Paso 1: Configurar un Anillo ("Cliente")
 1. Consigue una cadena NWC desde el dashboard de [Alby](https://nwc.getalby.com/). ¡Recomendamos crear una conexión con límite diario estricto!
