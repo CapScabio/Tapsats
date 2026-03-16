@@ -10,6 +10,10 @@
     Construido para <b>FOUNDATIONS Hackathon 2026</b> por <i>La Crypta</i>.
   </p>
 
+  <h3>
+    🌐 <a href="https://anirayo.vercel.app/">Probar Demo en Vivo (Vercel)</a> 🌐
+  </h3>
+
   <!-- Badges -->
   <p>
     <img alt="Lightning Network" src="https://img.shields.io/badge/Lightning_Network-792EE5?style=for-the-badge&logo=lightning&logoColor=white" />
