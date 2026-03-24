@@ -31,9 +31,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.4",
     "typescript": "^5.0.0",
-    "vite": "^8.0.2",
+    "vite": "^7.0.0",
     "vitest": "^4.1.1"
   }
 }
