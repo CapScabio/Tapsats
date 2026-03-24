@@ -68,6 +68,8 @@ El proyecto es simple, liviano y poderoso. Está diseñado "Mobile First" y no r
 2. Ingresa el monto (ej. 100 sats) y tu Lightning Address comercial.
 3. Presiona **"Escanear"**, acerca el anillo del cliente... ¡y *voilà*! La aplicación se conectará silenciosamente a NWC, resolverá el LNURL del comerciante y ejecutará el pago exitosamente.
 
+> 📸 **Fallback QR (Manual):** ¿El cliente no tiene su anillo a mano o falla la lectura NFC? ¡No hay problema! Pulsa el botón **"Mostrar QR"** para generar instantáneamente un código BOLT11 en pantalla. El cliente podrá pagarlo escaneándolo con su billetera Lightning favorita (Muun, Wallet of Satoshi, etc.), manteniendo a TapSats como tu única terminal POS.
+
 ---
 
 ## 🏆 Proyecto FOUNDATIONS
