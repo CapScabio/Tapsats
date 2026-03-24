@@ -106,6 +106,36 @@ ui.elements.chargeManualBtn.addEventListener('click', async () => {
 });
 
 // ==========================================
+// FLUJO: COBRAR (Mostrar QR Clásico)
+// ==========================================
+if (ui.elements.chargeQrBtn) {
+    ui.elements.chargeQrBtn.addEventListener('click', async () => {
+        const amount = Number(ui.elements.amountInput.value);
+        const merchant = ui.elements.merchantAddress.value.trim();
+
+        if (!amount || amount <= 0 || !Number.isSafeInteger(amount)) {
+            ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá un monto válido para cobrar.' });
+            return;
+        }
+
+        const lnUrlRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!merchant || !lnUrlRegex.test(merchant)) {
+            ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá una Lightning Address válida.' });
+            return;
+        }
+
+        try {
+            ui.transitionState(UI_STATES.REQUESTING_INVOICE);
+            const invoice = await paymentService.requestInvoice(merchant, amount);
+            
+            ui.transitionState(UI_STATES.SHOW_QR, { invoice });
+        } catch (error) {
+            ui.transitionState(UI_STATES.ERROR, { error: error.message || String(error) });
+        }
+    });
+}
+
+// ==========================================
 // FLUJO: CONFIGURAR ANILLO (Escribir NWC)
 // ==========================================
 ui.elements.writeBtn.addEventListener('click', async () => {
