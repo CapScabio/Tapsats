@@ -1,5 +1,15 @@
 import { webln } from "@getalby/sdk";
 import { LightningAddress } from "@getalby/lightning-tools";
+import { CONFIG } from "./config.js";
+
+const withTimeout = (promise, ms, message = "Tiempo de espera agotado") => {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error(message)), ms);
+        promise
+            .then(res => { clearTimeout(timer); resolve(res); })
+            .catch(err => { clearTimeout(timer); reject(err); });
+    });
+};
 
 /**
  * Servicio para procesar pagos Lightning
@@ -19,7 +29,11 @@ export class PaymentService {
             this.nwcClient = new webln.NWC({
                 nostrWalletConnectUrl: nwcUri
             });
-            await this.nwcClient.enable();
+            await withTimeout(
+                this.nwcClient.enable(), 
+                CONFIG.TIMEOUT_NWC_CONNECT_MS,
+                "Tiempo de espera agotado conectando al NWC del anillo."
+            );
             // Opcional: Obtener info para validar conexión
             const info = await this.nwcClient.getInfo();
             console.log("Conectado a NWC:", info);
@@ -63,7 +77,11 @@ export class PaymentService {
         }
 
         try {
-            const response = await this.nwcClient.sendPayment(invoice);
+            const response = await withTimeout(
+                this.nwcClient.sendPayment(invoice),
+                CONFIG.TIMEOUT_PAYMENT_MS,
+                "Tiempo de espera agotado procesando el pago lightning en el NWC."
+            );
             return response;
         } catch (error) {
             console.error("Error procesando pago:", error);
@@ -73,19 +91,12 @@ export class PaymentService {
 
     /**
      * Flujo completo: Crear invoice para el comercio y pagarlo con el NWC del anillo
+     * Usado principalmente en tests automatizados
      */
     async processNFCPayment(nwcUri, storeAddress, amountSats) {
-        // 1. Conectar la wallet del usuario (anillo)
         await this.connectNWC(nwcUri);
-
-        // 2. Crear un invoice a favor de la tienda
         const invoice = await this.requestInvoice(storeAddress, amountSats);
-
-        // 3. Pagar el invoice
         const result = await this.payInvoice(invoice);
-
-        // 4. Desconectar o limpiar (opcional, para mayor seguridad)
-        // this.nwcClient = null; // Descomentar si no queremos mantener la sesion abierta
 
         return {
             success: true,

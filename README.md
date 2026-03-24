@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://alby-builds.s3.amazonaws.com/media/bitcoin-lightning-nostr.png" alt="Lightning Logo" width="120" />
-  <h1>⚡ AniRayo</h1>
+  <h1>⚡ TapSats</h1>
   
   <p>
     <strong>La forma más rápida de cobrar en persona usando Lightning Network.</strong>
@@ -11,7 +11,11 @@
   </p>
 
   <h3>
-    🌐 <a href="https://anirayo.vercel.app/">Probar Demo en Vivo (Vercel)</a> 🌐
+    📖 <a href="docs/OPERATIONS.md">Documentación Operativa (Manual)</a>
+  </h3>
+
+  <h3>
+    🌐 <a href="https://tapsats.vercel.app/">Probar Demo en Vivo (Vercel)</a> 🌐
   </h3>
 
   <!-- Badges -->
@@ -25,9 +29,9 @@
 
 ---
 
-## 🎯 ¿Qué es Anirayo?
+## 🎯 ¿Qué es TapSats?
 
-**Anirayo** convierte cualquier smartphone Android con NFC en una terminal de cobro ultrarrápida (POS), permitiendo a los comerciantes cobrar en satoshis simplemente acercando el **anillo inteligente NFC** del cliente al celular.
+**TapSats** convierte cualquier smartphone Android con NFC en una terminal de cobro ultrarrápida (POS), permitiendo a los comerciantes cobrar en satoshis simplemente acercando el **anillo inteligente NFC** del cliente al celular.
 
 Atrás quedaron los días de escanear códigos QR lentamente. Con la magia de la API **Web NFC** y el estándar **Nostr Wallet Connect (NWC)**, los pagos fluyen de manera silenciosa, nativa y segura.
 
@@ -79,9 +83,9 @@ Este proyecto responde al desafío **Lightning Payments Basics** de la hackathon
 
 ## 🚀 Roadmap hacia la Adopción (8 Meses)
 
-**AniRayo** está diseñado para evolucionar mes a mes siguiendo el programa oficial de las **Lightning Hackathons 2026**, para llegar a Octubre con un producto PWA _production-ready_.
+**TapSats** está diseñado para evolucionar mes a mes siguiendo el programa oficial de las **Lightning Hackathons 2026**, para llegar a Octubre con un producto PWA _production-ready_.
 
-| Mes | Temática Hackathon | Hito de AniRayo ⚡ |
+| Mes | Temática Hackathon | Hito de TapSats ⚡ |
 | :---: | :--- | :--- |
 | **Marzo**  | `FOUNDATIONS` | **MVP 1-Toque**: Cobro de LNURL via Web NFC hacia un Lighning Address y conectividad básica en JS/Vite. |
 | **Abril**  | `IDENTITY` | **Onboarding Nostr**: Login de comerciantes mediante su `npub` para delegar automáticamente su perfil y configuración de pago en la terminal. |

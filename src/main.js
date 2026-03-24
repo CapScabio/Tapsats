@@ -1,133 +1,136 @@
 import { NFCService } from './lib/nfc-service.js';
 import { PaymentService } from './lib/payment-service.js';
+import { UIController } from './lib/ui-controller.js';
+import { UI_STATES } from './lib/config.js';
 
 // Inicializar servicios
 const nfcService = new NFCService();
 const paymentService = new PaymentService();
-
-// Referencias a elementos UI
-const elements = {
-    nfcWarning: document.getElementById('nfcWarning'),
-    chargeBtn: document.getElementById('chargeBtn'),
-    writeBtn: document.getElementById('writeBtn'),
-    amountInput: document.getElementById('amount'),
-    merchantAddress: document.getElementById('merchantAddress'),
-    nwcString: document.getElementById('nwcString'),
-    statusFeedback: document.getElementById('statusFeedback')
-};
-
-// Utilidad para escapar HTML y prevenir XSS
-function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return String(unsafe);
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-// Utilidad para mostrar notificaciones de estado
-function showStatus(message, type = 'scanning') {
-    elements.statusFeedback.className = `status-${type}`;
-    elements.statusFeedback.innerHTML = message;
-}
+const ui = new UIController();
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     if (!nfcService.isSupported()) {
-        elements.nfcWarning.style.display = 'block';
-
-        // Deshabilitar botones para evitar errores
-        elements.chargeBtn.disabled = true;
-        elements.writeBtn.disabled = true;
-
-        // Cambiar el texto a un emoji triste
-        elements.chargeBtn.innerHTML = 'NFC no soportado 😔';
-        elements.writeBtn.innerHTML = 'NFC no soportado 😔';
+        ui.disableNFCSupport();
     }
 });
 
 // ==========================================
 // FLUJO: COBRAR (Leer Anillo y Pagar)
 // ==========================================
-elements.chargeBtn.addEventListener('click', async () => {
-    const amount = Number(elements.amountInput.value);
-    const merchant = elements.merchantAddress.value.trim();
+ui.elements.chargeBtn.addEventListener('click', async () => {
+    const amount = Number(ui.elements.amountInput.value);
+    const merchant = ui.elements.merchantAddress.value.trim();
 
     if (!amount || amount <= 0 || !Number.isSafeInteger(amount)) {
-        showStatus('⚠️ Ingresá un monto válido para cobrar.', 'error');
+        ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá un monto válido para cobrar.' });
         return;
     }
 
     const lnUrlRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!merchant || !lnUrlRegex.test(merchant)) {
-        showStatus('⚠️ Ingresá una Lightning Address válida.', 'error');
+        ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá una Lightning Address válida.' });
         return;
     }
 
     try {
         // 1. Iniciar Escaneo
-        elements.chargeBtn.disabled = true;
-        elements.chargeBtn.innerHTML = '🔄 Escaneando...';
-        showStatus(`<strong>Acercá el anillo</strong> del cliente al reverso del teléfono para cobrar ${amount} sats.<br><br>⏱️ Esperando...`, 'scanning');
+        ui.transitionState(UI_STATES.SCANNING, {
+            message: `<strong>Acercá el anillo</strong> del cliente al reverso del teléfono para cobrar ${amount} sats.<br><br>⏱️ Esperando...`
+        });
 
         // 2. Leer NWC del Anillo
         const nwcUri = await nfcService.readNWC();
-        showStatus('✅ ¡Anillo detectado! Solicitando cobro a la billetera...', 'scanning');
+        
+        // 3. Conectar a NWC
+        ui.transitionState(UI_STATES.CONNECTING_WALLET);
+        await paymentService.connectNWC(nwcUri);
 
-        // 3. Procesar Pago Lightning
-        const result = await paymentService.processNFCPayment(nwcUri, merchant, amount);
+        // 4. Pedir Invoice
+        ui.transitionState(UI_STATES.REQUESTING_INVOICE);
+        const invoice = await paymentService.requestInvoice(merchant, amount);
 
-        // 4. Éxito
-        showStatus(`
-      <strong>✅ ¡Pago Recibido con Éxito!</strong><br><br>
-      <strong>Monto:</strong> ${amount} sats<br>
-      <strong>Recibo (Preimage):</strong><br><span style="font-size:0.75rem; word-break: break-all;">${escapeHtml(result.preimage)}</span>
-    `, 'success');
+        // 5. Pagar Invoice
+        ui.transitionState(UI_STATES.PAYING);
+        const result = await paymentService.payInvoice(invoice);
 
-        // Reiniciar input
-        elements.amountInput.value = '';
+        // 6. Éxito
+        ui.transitionState(UI_STATES.SUCCESS, { amount, preimage: result.preimage });
 
     } catch (error) {
-        showStatus(`❌ <strong>Error en el proceso:</strong><br>${escapeHtml(error.message || String(error))}`, 'error');
-    } finally {
-        // Restaurar botón
-        if (nfcService.isSupported()) {
-            elements.chargeBtn.disabled = false;
-            elements.chargeBtn.innerHTML = '<span style="font-size: 1.5rem">📱</span> Escanear anillo para Cobrar';
+        ui.transitionState(UI_STATES.ERROR, { error: error.message || String(error) });
+    }
+});
+
+// ==========================================
+// FLUJO: COBRAR (NWC Manual)
+// ==========================================
+ui.elements.chargeManualBtn.addEventListener('click', async () => {
+    const amount = Number(ui.elements.amountInput.value);
+    const merchant = ui.elements.merchantAddress.value.trim();
+
+    if (!amount || amount <= 0 || !Number.isSafeInteger(amount)) {
+        ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá un monto válido para cobrar.' });
+        return;
+    }
+
+    const lnUrlRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!merchant || !lnUrlRegex.test(merchant)) {
+        ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá una Lightning Address válida.' });
+        return;
+    }
+
+    const nwcUri = prompt('Pegá la URI de Nostr Wallet Connect (nostr+walletconnect://...)');
+    if (!nwcUri || !nwcUri.trim().startsWith('nostr+walletconnect://')) {
+        if (nwcUri !== null) {
+            ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá una URI válida.' });
         }
+        return;
+    }
+
+    try {
+        ui.transitionState(UI_STATES.CONNECTING_WALLET);
+        await paymentService.connectNWC(nwcUri.trim());
+
+        ui.transitionState(UI_STATES.REQUESTING_INVOICE);
+        const invoice = await paymentService.requestInvoice(merchant, amount);
+
+        ui.transitionState(UI_STATES.PAYING);
+        const result = await paymentService.payInvoice(invoice);
+
+        ui.transitionState(UI_STATES.SUCCESS, { amount, preimage: result.preimage });
+
+    } catch (error) {
+        ui.transitionState(UI_STATES.ERROR, { error: error.message || String(error) });
     }
 });
 
 // ==========================================
 // FLUJO: CONFIGURAR ANILLO (Escribir NWC)
 // ==========================================
-elements.writeBtn.addEventListener('click', async () => {
-    const nwc = elements.nwcString.value.trim();
+ui.elements.writeBtn.addEventListener('click', async () => {
+    const nwc = ui.elements.nwcString.value.trim();
 
     if (!nwc || !nwc.startsWith('nostr+walletconnect://')) {
-        showStatus('⚠️ Ingresá una URI válida (debe empezar con nostr+walletconnect://)', 'error');
+        ui.transitionState(UI_STATES.ERROR, { error: 'Ingresá una URI válida (debe empezar con nostr+walletconnect://)' });
         return;
     }
 
     try {
-        elements.writeBtn.disabled = true;
-        elements.writeBtn.innerHTML = '🔄 Escribiendo...';
-
-        showStatus('<strong>Acercá el anillo</strong> al reverso de tu teléfono para vincularlo a tu billetera...<br><br>⏱️ Esperando...', 'scanning');
+        ui.transitionState(UI_STATES.SCANNING, {
+            message: '<strong>Acercá el anillo</strong> al reverso de tu teléfono para vincularlo a tu billetera...<br><br>⏱️ Esperando...'
+        });
 
         await nfcService.writeNWC(nwc);
 
-        showStatus('✅ <strong>¡Anillo configurado con éxito!</strong><br>Ya podés usarlo para pagar.', 'success');
-        elements.nwcString.value = ''; // Limpiar input por seguridad
+        ui.elements.nwcString.value = ''; 
+        ui.showStatus('✅ <strong>¡Anillo configurado con éxito!</strong><br>Ya podés usarlo para pagar.', 'success');
+        
+        setTimeout(() => {
+            if (ui.currentState !== UI_STATES.SCANNING) ui.transitionState(UI_STATES.IDLE);
+        }, 3000);
 
     } catch (error) {
-        showStatus(`❌ <strong>Error al vincular:</strong><br>${escapeHtml(error.message || String(error))}`, 'error');
-    } finally {
-        if (nfcService.isSupported()) {
-            elements.writeBtn.disabled = false;
-            elements.writeBtn.innerHTML = '<span style="font-size: 1.5rem">✍️</span> Escribir en el Anillo';
-        }
+        ui.transitionState(UI_STATES.ERROR, { error: error.message || String(error) });
     }
 });

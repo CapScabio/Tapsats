@@ -1,9 +1,10 @@
 {
-  "name": "lightning-starter",
+  "name": "tapsats",
   "version": "1.0.0",
-  "description": "Starter kit para Lightning Hackathons 2026 - La Crypta",
+  "description": "TapSats - Terminal de cobro NFC P2P sobre Lightning Network",
   "type": "module",
   "scripts": {
+    "test": "vitest run",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
@@ -32,6 +33,7 @@
     "@types/node": "^20.0.0",
     "@vitejs/plugin-basic-ssl": "^1.1.0",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vitest": "^4.1.1"
   }
 }
